@@ -1,0 +1,58 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    title App
+    script(src="https://cdn.socket.io/4.1.2/socket.io.min.js" integrity="sha384-toS6mmwu70G0fw54EGlWWeA4z3dyJ+dlXBtSURSKN4vyRFOcxd3Bzjj/AoOwY+Rg" crossorigin="anonymous")
+
+  body 
+    label(for="roomname") Room
+    input.roomname(type="text", name="roomname")
+    button(onclick="changeRoom()") Change Room
+    br
+    h2#roomname Test Room
+    br
+    label(for="username") Name
+    input.username(type="text", name="username")
+    button(onclick="changeName()") Change Name
+    br
+    h2#username Test Name
+    br
+    input.message(type="text", name="message")
+    button(onclick="sendMessage()") Send Message
+    ul#message
+    script(type="text/javascript").
+      const socket = io("http://localhost:3000")
+
+      const changeRoom = () => {
+        let roomname = document.querySelector('.roomname').value;
+        socket.emit("changeRoom", { roomname });
+      }
+
+      const changeName = () => {
+        let username = document.querySelector(".username").value;
+        socket.emit("changeName", { username });
+      }
+
+      socket.on("changeName", (data) => {
+        document.querySelector("#username").innerHTML = data;
+      })
+
+      socket.on('changeRoom', (data) => {
+        document.querySelector("#roomname").innerHTML = data;
+      })
+      
+      socket.on('connect', () => {
+        console.log("Connection started");
+      })
+
+      const sendMessage = () => {
+        let msg = document.querySelector(".message").value.toString();
+        document.querySelector("#message").innerHTML += '<li><span>You: </span>' + msg + '</li>';
+        socket.emit("message", { msg });
+      }
+
+      socket.on("message", (data) => {
+        console.log(data);
+        document.querySelector("#message").innerHTML += '<li><span>' + data.username + ': </span>' + data.msg + '</li>';
+      })
